@@ -2,13 +2,13 @@ import createRequester from "./requester";
 import createSubscriber from "./subscriber";
 import connect from "./ws";
 
-export interface ChatApi {
+export interface WsApi {
     request: (uri: string, data: any) => Promise<any>;
     subscribe: (subject: string, handler: (msg: any) => void) => void;
     close: () => void;
 }
 
-export default function createApi(url?: string): ChatApi {
+export default function createApi(url?: string): WsApi {
     if (!url && mantilEnv) {
         url = mantilEnv.endpoints.ws;
     }
