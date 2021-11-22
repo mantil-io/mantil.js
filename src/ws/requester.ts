@@ -19,10 +19,6 @@ export default function createRequester(ws: WsApi) {
         }
     });
 
-    ws.addReconnectHandler(() => {
-        close();
-    });
-
     async function request(uri: string, data: any): Promise<any> {
         const inbox = uuid();
         const msg: proto.Message = {

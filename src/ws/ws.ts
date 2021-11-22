@@ -9,7 +9,8 @@ export interface WsApi {
 
 export default function connect(url: string): WsApi {
     let ws: WebSocket;
-    const reconnectHandlers: (() => void)[] = [];
+    let reconnectHandlers: (() => void)[] = [];
+    let messageHandlers: ((e: MessageEvent) => void)[] = [];
 
     let openResolve: (val: any) => void;
     let openGuard: Promise<any>;
@@ -18,6 +19,9 @@ export default function connect(url: string): WsApi {
         ws = new WebSocket(url);
         ws.onopen = onWsOpen;
         ws.onclose = onWsClose;
+        messageHandlers.forEach(h => {
+            ws.addEventListener('message', h);
+        });
         openGuard = new Promise(resolve => {
             openResolve = resolve;
             if (ws.readyState === ws.OPEN) {
@@ -45,8 +49,13 @@ export default function connect(url: string): WsApi {
         if (reconnectCnt > 0) {
             timeoutDuration = Math.pow(2, reconnectCnt - 1) * 1000;
         }
-        reconnectTimeout = setTimeout(init, timeoutDuration);
+        reconnectTimeout = setTimeout(reconnect, timeoutDuration);
         reconnectCnt++;
+    }
+
+    function reconnect() {
+        init();
+        reconnectHandlers.forEach(h => h());
     }
 
     async function send(m: proto.Message) {
@@ -58,13 +67,15 @@ export default function connect(url: string): WsApi {
     }
 
     function addMessageEventListener(handler: (m: proto.Message) => void) {
-        ws.addEventListener('message', (e: MessageEvent) => {
+        const h = (e: MessageEvent) => {
             const m = proto.parse(e.data);
             if (m === null) {
                 return;
             }
             handler(m);
-        });
+        };
+        ws.addEventListener('message', h);
+        messageHandlers.push(h);
     }
 
     function addReconnectHandler(handler: () => void) {
@@ -72,6 +83,8 @@ export default function connect(url: string): WsApi {
     }
 
     function close() {
+        messageHandlers = [];
+        reconnectHandlers = [];
         ws.onclose = null;
         ws.close();
     }
