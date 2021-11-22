@@ -17,6 +17,12 @@ export default function createSubscriber(ws: WsApi) {
         }
     });
 
+    ws.addReconnectHandler(() => {
+        for(const s in subs) {
+            subscribe(s, subs[s]);
+        }
+    });
+
     function subscribe(subject: string, handler: (msg: any) => void) {
         subs[subject] = handler;
         ws.send({
@@ -34,7 +40,9 @@ export default function createSubscriber(ws: WsApi) {
     }
 
     function close() {
-        // TODO
+        for(const s in subs) {
+            unsubscribe(s);
+        }
     }
 
     return {

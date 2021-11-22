@@ -22,6 +22,7 @@ export default function createApi(url?: string): WsApi {
     function close() {
         requester.close();
         subscriber.close();
+        ws.close();
     }
 
     return {
