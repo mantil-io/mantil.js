@@ -1,4 +1,4 @@
-#mantil.js
+# mantil.js
 
 mantil.js is a JavaScript SDK for developing Mantil applications.
 
@@ -36,6 +36,7 @@ api.subscribe('subject', message => console.log(message));
 ```
 2. Invoke api methods:
 ```
-const rsp = await api.request('ping.default'); // This will invoke the default method of the 'ping' API
+const rsp = await api.request('ping.default');
 console.log(rsp);
 ```
+This will invoke the `default` method of the `ping` API.
